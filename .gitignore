@@ -32,6 +32,10 @@ new-lua-test
 
 # VS Files
 *.sdf
+*.opensdf
 *.suo
-Debug.win32
-Debug.win32
+*.user
+*.pdb
+*.ilk
+frameworks/runtime-src/proj.win32/Debug.win32
+frameworks/runtime-src/proj.win32/Release.win32
