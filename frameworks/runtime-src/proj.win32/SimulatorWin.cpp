@@ -299,6 +299,8 @@ int SimulatorWin::run()
     }
 
     // set environments
+	printf("_project.getProjectDir() = (%s)\n", _project.getProjectDir().c_str());
+	printf("_project.getWritableRealPath() = (%s)\n", _project.getWritableRealPath().c_str());
     SetCurrentDirectoryA(_project.getProjectDir().c_str());
     FileUtils::getInstance()->setDefaultResourceRootPath(_project.getProjectDir());
     FileUtils::getInstance()->setWritablePath(_project.getWritableRealPath().c_str());
@@ -334,6 +336,7 @@ int SimulatorWin::run()
 
     // check scale
     Size frameSize = _project.getFrameSize();
+	// printf("<< frameSize (%0.2f, %0.2f)\n", frameSize.height, frameSize.width);
     float frameScale = 1.0f;
     if (_project.isRetinaDisplay())
     {
@@ -344,6 +347,7 @@ int SimulatorWin::run()
     {
         frameScale = screenScale;
     }
+	printf("<< frameSize (%0.2f, %0.2f)\n", frameSize.height, frameSize.width);
 
     // check screen workarea
     RECT workareaSize;

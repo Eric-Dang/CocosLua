@@ -5,13 +5,15 @@
 -- 		当前关卡
 --		其他的信息
 ---------------------------------------------------------------------------------------------------
-local require = require
-local print = print
-local cc 	= cc
-local _G	= _G
+local require	= require
+local print 	= print
+local pairs		= pairs
+local cc 		= cc
+local _G		= _G
 ---------------------------------------------------------------------------------------------------
 -- app运行时的数据
 GameRes = {}
+GameRes.ResourceSize = {width = 720, height = 1280}
 ---------------------------------------------------------------------------------------------------
 module "game.game"
 ---------------------------------------------------------------------------------------------------
@@ -35,7 +37,7 @@ function touchCallBack(tag)
 	-- 刷新
 	if not GameRes.Guanqia then
 		-- 暂时使用同一个menu
-		GameRes.Guanqia = d_GuanQia:create(GameRes.BeginMenu, GameRes.size)
+		GameRes.Guanqia = d_GuanQia:create(GameRes.BeginMenu, GameRes.winSize)
 		GameRes.Guanqia:InitAllChunk()
 	else
 		GameRes.Guanqia:Clear()
@@ -47,20 +49,67 @@ function init_game()
 	GameRes.director = cc.Director:getInstance()
 	local glView   = GameRes.director:getOpenGLView()
 	if nil == glView then
-		glView = cc.GLViewImpl:createWithRect("Lua Tests", cc.rect(0,0,900,640))
+		glView = cc.GLViewImpl:createWithRect("Lua Tests", cc.rect(0,0,960,640))
 		director:setOpenGLView(glView)
 	end
+
 	GameRes.glView = glView
-	GameRes.size  = cc.Director:getInstance():getWinSize()
+	GameRes.winSize   = cc.Director:getInstance():getWinSize()
+	GameRes.FrameSize = glView:getFrameSize()
+
+	local function pp(name, a)
+		print(name .. " {")
+		for k, v in pairs(a) do
+			print(k .. " = " .. v)
+		end
+		print("}")
+	end
+
+	---[[
+	print("\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+	pp("cc.Director:getInstance():getWinSize()", cc.Director:getInstance():getWinSize())
+	pp("glView:getFrameSize()", glView:getFrameSize())
+	pp("cc.Director:getInstance():getVisibleSize()", cc.Director:getInstance():getVisibleSize())
+	print("---------------------------------------------")--]]
+
+	local curAspectRatio = GameRes.FrameSize.width/GameRes.FrameSize.height
+	local resAspectRatio = GameRes.ResourceSize.width/GameRes.ResourceSize.height
+	print("curAspectRatio", curAspectRatio, "resAspectRatio", resAspectRatio)
+	if curAspectRatio > resAspectRatio then	-- 采用宽度自适应
+		print(">> ResolutionPolicy.FIXED_HEIGH")
+		glView:setDesignResolutionSize(GameRes.winSize.width, GameRes.winSize.height, cc.ResolutionPolicy.FIXED_HEIGHT)
+	else	-- 采用高度自适应
+		print(">> ResolutionPolicy.FIXED_WIDTH")
+		glView:setDesignResolutionSize(GameRes.winSize.width, GameRes.winSize.height, cc.ResolutionPolicy.FIXED_WIDTH)
+	end
+
+	GameRes.winSize   = cc.Director:getInstance():getWinSize()
 
 	GameRes.scene = cc.Scene:create()
+	local sp = cc.Sprite:create("beijintu.png")
+	sp:setAnchorPoint(0, 0)
+	sp:setPosition(0,0)
+	sp:setScaleX(GameRes.winSize.width/GameRes.ResourceSize.width)
+	sp:setScaleY(GameRes.winSize.height/GameRes.ResourceSize.height)
+	-- print("GameRes.winSize.width", GameRes.winSize.width)
+	-- print("GameRes.winSize.height", GameRes.winSize.height)
+
+	---[[
+	print("\n\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+	pp("cc.Director:getInstance():getWinSize()", cc.Director:getInstance():getWinSize())
+	pp("glView:getFrameSize()", glView:getFrameSize())
+	pp("cc.Director:getInstance():getVisibleSize()", cc.Director:getInstance():getVisibleSize())
+	print("---------------------------------------------")	--]]
+
+	GameRes.scene:addChild(sp)
 	GameRes.curLayer = cc.Layer:create()
 	GameRes.scene:addChild(GameRes.curLayer)
+
 
 	if true then
 		GameRes.BeginButton = cc.MenuItemImage:create("zantinganniu.PNG", "zantinganniu.PNG")
 	    GameRes.BeginButton:registerScriptTapHandler(closeCallback)
-	    GameRes.BeginButton:setPosition(cc.p(GameRes.size.width - 50, GameRes.size.height - 50))
+	    GameRes.BeginButton:setPosition(cc.p(GameRes.winSize.width - 50, GameRes.winSize.height - 50))
 	    GameRes.BeginButton:setScale(0.45)
 	    -- 如果直接添加 不会收到点击事件 而是先要添加一个emnu
 		-- GameRes.curLayer:addChild(GameRes.BeginButton)
@@ -72,7 +121,7 @@ function init_game()
 	else
 		-- GameRes.BeginButton = cc.ControlButton:create("zantinganniu.PNG", "zantinganniu.PNG")
 		-- GameRes.BeginButton:registerScriptTapHandler(closeCallback)
-	    -- GameRes.BeginButton:setPosition(cc.p(GameRes.size.width - 50, GameRes.size.height - 50))
+	    -- GameRes.BeginButton:setPosition(cc.p(GameRes.winSize.width - 50, GameRes.winSize.height - 50))
 	    -- GameRes.BeginButton:setScale(0.45)
 	    -- GameRes.curLayer:addChild(GameRes.BeginButton)
 	end
@@ -84,11 +133,11 @@ function init_game()
 
 
 	local RefreshImg = cc.Sprite:create("zantinganniu.PNG")
-	print(RefreshImg, "RefreshImg", cc.Sprite.create)
+	-- print(RefreshImg, "RefreshImg", cc.Sprite.create)
 end
 
 function register_event()
-	print("register_event")
+	-- print("register_event")
 	-- 监听鼠标
 	GameRes.BeginButton:registerScriptTapHandler(touchCallBack)
 
